@@ -1,0 +1,14 @@
+Die Idee, Toasts als Charaktere in einem Jump and Run Spiel zu verwenden, ist originell. Hier sind ein paar Schritte, die uns bei der Umsetzung helfen:
+
+1. **Spielkonzept festlegen**: Überlegt euch, wie das Spiel aussehen soll. Welche Art von Hindernissen sollen die Toasts überwinden? Gibt es Power-Ups oder besondere Fähigkeiten für die Toasts?
+
+2. **Controller-Unterstützung einbauen**: Plant die Steuerung des Spiels mit Controllern ein. Überlegt euch, wie die Tastenbelegung sein soll und wie die Bewegungen der Toasts mit den Controller-Sticks gesteuert werden können.
+
+3. **Entwicklungsumgebung wählen**: Entscheidet euch für eine geeignete Plattform oder Engine zur Entwicklung des Spiels. Es gibt viele Optionen wie Unity, Unreal Engine, oder auch programmierbare Plattformen wie Arduino für die Controller-Integration.
+
+4. **Grafiken und Animationen erstellen**: Gestaltet die Toast-Charaktere und die Spielwelt. Ihr könnt entweder eigene Grafiken erstellen oder vorhandene Grafiken verwenden und anpassen.
+
+5. **Programmierung**: Setzt das Spiel gemäß eurem Konzept um. Programmiert die Spiellogik, die Charaktersteuerung, die Kollisionserkennung und alle anderen erforderlichen Funktionen.
+
+6. **Testing und Feinabstimmung**: Testet das Spiel gründlich, um Fehler zu finden und das Gameplay zu optimieren. Passt Schwierigkeitsgrad, Steuerung und andere Aspekte des Spiels entsprechend an.
+
