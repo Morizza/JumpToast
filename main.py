@@ -5,13 +5,24 @@ import random
 
 # pygame setup
 pygame.init()
-screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
+screen = pygame.display.set_mode((1280, 720), pygame.FULLSCREEN)
 clock = pygame.time.Clock()
 running = True
 dt = 0
 Gravity = pygame.Vector2(0, 9.81)
 
+class Toaster(pygame.sprite.Sprite):
+    def __init__(self, **kwargs) -> None:
+        super().__init__()
+        self.image = pygame.transform.scale2x(pygame.image.load("assets/toaster.png").convert_alpha())
+        self.rect = self.image.get_rect(**kwargs)
+        self.boden = Wall((50, 10), midbottom=(pygame.Vector2(self.rect.midbottom) + pygame.Vector2(0, -50)).xy)
+        # self.boden.image.set_alpha()
+        wall_group.add(self.boden)
 
+    def kill(self) -> None:
+        self.boden.kill()
+        return super().kill()
 
 class Wall(pygame.sprite.Sprite):
     def __init__(self, size, **kwargs) -> None:
@@ -42,6 +53,7 @@ class Toast(pygame.sprite.Sprite):
         self.can_jump = True
         self.carrier = None
         self.other_toast: Toast = None
+        self.in_toaster = False
 
     def wall_below_me(self) -> Wall | Any:
         possible_walls = filter(lambda wall: wall.rect.top >= self.rect.bottom and any((
@@ -54,7 +66,7 @@ class Toast(pygame.sprite.Sprite):
         try:
             return sorted(possible_walls, key=lambda wall: wall.rect.top - self.rect.bottom)[0]
         except IndexError:
-            raise Exception("There should always be a wall below me, but there isn't")
+            raise Exception(f"{main_boden} There should always be a wall below me, but there isn't")
 
     def update(self, *args: Any, **kwargs: Any) -> None:
         self.position.y += self.velocity.y
@@ -80,8 +92,16 @@ class Toast(pygame.sprite.Sprite):
         if self.velocity.y > -3:
             self.velocity.y = 0
 
+        if pygame.sprite.spritecollide(self, toaster_group, dokill=False):
+            self.in_toaster = True
+        else:
+            self.in_toaster = False
+
     def jump(self): 
-            self.velocity.y += -30
+            jumpforce = -30
+            if self.in_toaster:
+                jumpforce -=30
+            self.velocity.y += jumpforce
             self.can_jump = False
             self.carrier = None
 
@@ -110,8 +130,11 @@ toastA.other_toast, toastB.other_toast = toastB, toastA
 
 toasts = pygame.sprite.Group(toastA, toastB)
 
+toaster_group = pygame.sprite.Group()
+
 wall_group = pygame.sprite.Group()
-wall_group.add(Wall((screen.get_width(), 10), topleft=(0, screen.get_height() - 10)))
+main_boden = Wall((screen.get_width(), 10), topleft=(0, screen.get_height() - 10))
+wall_group.add(main_boden)
 
 font = pygame.font.SysFont("arial", 18)
 cam = Camera(screen)
@@ -141,13 +164,17 @@ while running:
     
     keys = pygame.key.get_pressed()
     if keys[pygame.K_a]:
-        toastA.move(1)
+        if toastA.rect.left >= 0:
+            toastA.move(1)
     if keys[pygame.K_d]:
-        toastA.move(-1)
+        if toastA.rect.right <= screen.get_width():
+            toastA.move(-1)
     if keys[pygame.K_RIGHT]:
-        toastB.move(-1)
+        if toastB.rect.right <= screen.get_width(): 
+            toastB.move(-1)
     if keys[pygame.K_LEFT]:
-        toastB.move(1)
+        if toastB.rect.left >= 0:
+            toastB.move(1)
     toasts.update()
     wall_group.update()
 
@@ -155,15 +182,28 @@ while running:
     screen.fill("blue")
     cam.draw(wall_group)
     cam.draw(toasts)
-    # text = font.render(f"{toast.velocity.y} {toast.rect.bottom} {screen.get_height()} {toast.position.distance_to(pygame.Vector2(pygame.mouse.get_pos()))}", False, "black")
-    # screen.blit(text, (100, 100))
+    cam.draw(toaster_group)
+
+    
+    text = font.render(f"{cam.offset.y}", False, "black")
+    screen.blit(text, (100, 100))
 
 
-    while len(wall_group.sprites()) <= 10:
-        width = 64
-        new_wall = Plate(bottomleft=(random.randint(10, screen.get_width()-10-width), random.randint(-1000, 1000) - cam.offset.y))
-        if not pygame.sprite.spritecollide(new_wall, wall_group, (False, False)): 
-            wall_group.add(new_wall)
+    while len(wall_group) <= 10:
+        highest: Plate | Wall = list(sorted(wall_group.sprites(), key=lambda wall: wall.rect.top, reverse=False))[0]
+        new_pos = pygame.Vector2(highest.rect.midtop) + pygame.Vector2(random.randint(-600, 600), random.randint(-320, -50))
+        if 0 < new_pos.x < screen.get_width():
+            if random.randint(0, 9) == 0:
+                toaster_group.add(Toaster(midbottom=new_pos.xy))
+            else:
+                wall_group.add(Plate(midbottom=new_pos.xy))
+
+
+            
+
+    if len(toaster_group) == 0:
+        toaster_group.add(Toaster(bottomleft=(random.randint(80, screen.get_width()-80), screen.get_height() - cam.offset.y)))
+
 
 
     # flip() the display to put your work on screen
